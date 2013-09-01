@@ -1,4 +1,4 @@
-air-editor
+air-editor (no finish yet)
 ==========
 
 As simple as possible.
