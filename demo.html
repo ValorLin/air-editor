@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>AirEditor Demo</title>
+	<style type="text/css">
+		#air-editor {
+			width         : 500px;
+			height        : 150px;
+			padding       : 10px;
+
+			border        : dashed darkseagreen;
+			border-radius : 10px;
+
+			font-size     : 24px;
+			font-family   : '微软雅黑';
+			color         : darkgoldenrod;
+
+			overflow      : auto;
+		}
+
+		#air-editor:focus {
+			outline : none;
+			border  : dashed yellowgreen;
+		}
+	</style>
+	<link rel="stylesheet" href="src/plugins/emoji/libs/emoji.css"/>
+</head>
+<body>
+<div id="air-editor">
+That's really a cool stuff😎.
+</div>
+<div id="events">
+
+</div>
+<script src="src/air-editor.js" type="text/javascript"></script>
+<script src="src/plugins/caret/caret.js" type="text/javascript"></script>
+<script src="src/plugins/emoji/libs/emoji.js" type="text/javascript"></script>
+<script src="src/plugins/emoji/p-emoji.js" type="text/javascript"></script>
+<script src="src/plugins/debuger/p-debuger.js" type="text/javascript"></script>
+<script type="text/javascript">
+	var airEditor,emojiPlugin;
+	window.onload = function () {
+		emojiPlugin = new EmojiPlugin()
+		airEditor = new AirEditor({
+			elId   : 'air-editor',
+			plugins: [
+				new DebugerPlugin(),
+				emojiPlugin
+			]
+		});
+	};
+</script>
+</body>
+</html>
