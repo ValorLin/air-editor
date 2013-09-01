@@ -11,38 +11,31 @@
 	var proto = EmojiPlugin.prototype = new AirEditor.Plugin();
 	proto.init = function (editor) {
 		this.editor = editor;
-		editor.on('input', function () {
-			this.insertEmoji('😎');
-		}, this);
 	};
 
 	proto.showEmojiPicker = function () {
+		// TODO this is the next step
 		alert('showEmojiPicker');
 	};
 
 
 	// Insert a emoji
-	// We can not insert a custom image, so we insert a
-	// fakeImg, then replace it with our emoji image.
+	// We can not insert a custom image directly, so we insert
+	// a fakeImg instead, then replace it with our emoji image.
 	proto.insertEmoji = function (emojiChar) {
 		var editor = this.editor;
-
 		var fakeImgEl,
-			fakeImgUrl = '',
+			fakeImgUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
 			fakeImgRegExp = new RegExp('<img src="' + fakeImgUrl + '">', 'ig');
+
+		editor.focus();
 		document.execCommand('InsertImage', false, fakeImgUrl);
 		fakeImgEl = editor.el.querySelector('img[src="' + fakeImgUrl + '"]');
 
 		var unifiedEmojiChar = jEmoji.softbankToUnified(emojiChar),
 			emojiImg = jEmoji.unifiedToImage(unifiedEmojiChar);
 		fakeImgEl.outerHTML = fakeImgEl.outerHTML.replace(fakeImgRegExp, emojiImg);
+		editor.trigger('input');
+		editor.focus();
 	};
-
-//	proto.emojifyContent = function () {
-//		var html , text, editor = this.editor;
-//		text = editor.text();
-//		text = jEmoji.softbankToUnified(text);
-//		html = jEmoji.unifiedToHTML(text);
-//		editor.text(html, {silent: true});
-//	};
 })(window);

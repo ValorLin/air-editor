@@ -4,12 +4,12 @@
  * Copyright(c) 2013 Weilao <qqq123026689@126.com>
  * MIT Licensed
  */
-(function (window) {
+(function (_window) {
 	var array = [],
 		each = array.forEach,
 		slice = array.slice;
 
-	var AirEditor = window.AirEditor = function (opts) {
+	var AirEditor = _window.AirEditor = function (opts) {
 		opts = this.opts = opts || {};
 		if ('undefined' === typeof opts.elId) {
 			throw('opts.elId is required');
@@ -28,9 +28,16 @@
 		el.addEventListener('paste', this.inputCheck.bind(this));
 		el.addEventListener('drop', this.inputCheck.bind(this));
 
+		// Bind events to detect editor caret change.
+		el.addEventListener('keydown', this.updateCaret.bind(this));
+		el.addEventListener('click', this.updateCaret.bind(this));
+		el.addEventListener('blur', this.updateCaret.bind(this));
+		this.on('input', this.updateCaret.bind(this));
+
 		this.initPlugins(opts.plugins || []);
 		el.setAttribute('contenteditable', 'true');
 		this.trigger('ready', this, opts);
+		this.focus();
 	};
 
 	var proto = AirEditor.prototype;
@@ -129,6 +136,50 @@
 		}, 0);
 	};
 
+	var _currRange;
+	proto.updateCaret = function () {
+		var el = this.el,
+			newRange = Caret.getRange(),
+			rangeAncestor = newRange.commonAncestorContainer;
+		if (rangeAncestor === el || rangeAncestor.parentNode === el) {
+			_window.currRange = _currRange = Caret.getRange();
+		}
+	};
+
+	proto.focus = function () {
+		this.el.focus();
+		if (_currRange) {
+			Caret.selectRange(_currRange);
+		}
+	};
+
+
+	/*
+	 *  range part
+	 */
+
+
+	// Basic support
+	var Caret = {};
+	var msie = document.selection;
+	Caret.getSelection = function () {
+		return ( msie )
+			? document.selection
+			: document.getSelection();
+	}
+
+	Caret.getRange = function () {
+		return ( msie )
+			? this.getSelection().createRange()
+			: this.getSelection().getRangeAt(0)
+	}
+
+	Caret.selectRange = function (range) {
+		var sel = this.getSelection();
+		sel.removeAllRanges();
+		sel.addRange(range);
+	}
+
 	/*
 	 *  Event part
 	 */
@@ -160,7 +211,7 @@
 			handlers.splice(targetIndex, 1);
 		}
 		// When all callback of the event has been deleted,
-		// the event should be delete either.
+		// the event should be deleted either.
 		if (!handlers.length) {
 			delete this._events[name];
 		}
@@ -185,5 +236,4 @@
 	};
 
 
-})
-	(window);
+})(this);
