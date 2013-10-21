@@ -4,11 +4,14 @@
  * Copyright(c) 2013 Weilao <qqq123026689@126.com>
  * MIT Licensed
  */
-define(['emoji'], function (jEmoji) {
-	var EmojiPlugin = function () {
+(function (_window) {
+
+	var EmojiPlugin = _window.EmojiPlugin = function () {
 		return this;
 	};
+	
 	var proto = EmojiPlugin.prototype = new AirEditor.Plugin();
+	
 	proto.init = function (editor) {
 		this.editor = editor;
 	};
@@ -40,5 +43,5 @@ define(['emoji'], function (jEmoji) {
 		editor.trigger('input');
 		editor.focus();
 	};
-	return EmojiPlugin
-});
+
+})(window);
