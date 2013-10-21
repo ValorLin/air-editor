@@ -1,5 +1,5 @@
 /*!
- * emoji support plugin for AirEditor
+ * AirEditor
  *
  * Copyright(c) 2013 Weilao <qqq123026689@126.com>
  * MIT Licensed
@@ -32,6 +32,7 @@
 		el.addEventListener('keydown', this.updateCaret.bind(this));
 		el.addEventListener('click', this.updateCaret.bind(this));
 		el.addEventListener('blur', this.updateCaret.bind(this));
+		el.addEventListener('focus', this.updateCaret.bind(this));
 		this.on('input', this.updateCaret.bind(this));
 
 		this.initPlugins(opts.plugins || []);
@@ -54,6 +55,7 @@
 
 	// Get or set the editor's text.
 	proto.text = function (text, opts) {
+		opts = opts || {};
 		if (!arguments.length) {
 			return this._getText();
 		}
@@ -87,7 +89,41 @@
 					tmpEditorEl.innerHTML.replace(r, character);
 			}
 		});
-		return tmpEditorEl.innerText;
+
+        var text = '';
+
+        if(!tmpEditorEl.innerText) {
+            var childS = tmpEditorEl.childNodes;
+                for(var i=0; i<childS.length; i++) {
+                if(childS[i].nodeType==1) {
+                    text += childS[i].tagName=="BR" ? '\n' : childS[i].textContent;
+                }
+                else if(childS[i].nodeType==3) {
+                    text += childS[i].nodeValue;
+                }
+            }
+        }
+        else {
+            var is_chrome = navigator.userAgent.indexOf('Chrome') > -1
+            var is_safari = navigator.userAgent.indexOf("Safari") > -1;
+
+            if(is_safari && !is_chrome) {
+                var childS = tmpEditorEl.childNodes;
+
+                for(var i=0; i<childS.length; i++) {
+                    if(i != 0) {
+                        text += '\n';
+                    }
+
+                    text += childS[i].textContent;
+                }
+            }
+            else {
+                text = tmpEditorEl.innerText;
+            }
+        }
+
+		return text;
 	};
 
 	// Set the editor's value in text format.
@@ -136,20 +172,23 @@
 		}, 0);
 	};
 
-	var _currRange;
 	proto.updateCaret = function () {
-		var el = this.el,
-			newRange = Caret.getRange(),
-			rangeAncestor = newRange.commonAncestorContainer;
+		var rangeAncestor,
+			el = this.el,
+			newRange = Caret.getRange();
+		if (!newRange) {
+			return
+		}
+		rangeAncestor = newRange.commonAncestorContainer;
 		if (rangeAncestor === el || rangeAncestor.parentNode === el) {
-			_window.currRange = _currRange = Caret.getRange();
+			_window.currRange = this._currRange = Caret.getRange();
 		}
 	};
 
 	proto.focus = function () {
 		this.el.focus();
-		if (_currRange) {
-			Caret.selectRange(_currRange);
+		if (this._currRange) {
+			Caret.selectRange(this._currRange);
 		}
 	};
 
@@ -166,19 +205,21 @@
 		return ( msie )
 			? document.selection
 			: document.getSelection();
-	}
+	};
 
 	Caret.getRange = function () {
+		var selection = this.getSelection();
 		return ( msie )
-			? this.getSelection().createRange()
-			: this.getSelection().getRangeAt(0)
-	}
+			? selection.createRange()
+			: selection.rangeCount > 0 ?
+			selection.getRangeAt(0) : null;
+	};
 
 	Caret.selectRange = function (range) {
 		var sel = this.getSelection();
 		sel.removeAllRanges();
 		sel.addRange(range);
-	}
+	};
 
 	/*
 	 *  Event part
@@ -236,4 +277,4 @@
 	};
 
 
-})(this);
+})(window);
